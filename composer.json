@@ -1,0 +1,25 @@
+{
+    "name": "crysalead/filter",
+    "description": "Method filtering system",
+    "keywords": ["aspect programming", "method filtering", "aspect", "aop"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Crysalead"
+        }
+    ],
+    "require": {
+        "php": ">=5.4",
+        "crysalead/kahlan": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "filter\\": "src/",
+            "filter\\spec\\": "spec/"
+        }
+    },
+    "config": {
+        "bin-dir": "bin"
+    },
+    "minimum-stability": "dev"
+}
