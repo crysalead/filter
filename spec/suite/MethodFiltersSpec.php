@@ -1,5 +1,5 @@
 <?php
-namespace filter\spec;
+namespace filter\spec\suite;
 
 use filter\MethodFilters;
 

@@ -1,5 +1,5 @@
 <?php
-namespace filter\spec\behavior;
+namespace filter\spec\suite\behavior;
 
 use kahlan\plugin\Stub;
 use filter\MethodFilters;
