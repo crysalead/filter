@@ -10,7 +10,7 @@
     ],
     "require": {
         "php": ">=5.4",
-        "crysalead/jit": "dev-master"
+        "crysalead/jit": "~1.0"
     },
     "require-dev": {
         "crysalead/kahlan": "dev-master"

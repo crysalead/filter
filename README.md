@@ -1,6 +1,6 @@
 # Filter - Method Filtering System.
 
-[![Build Status](https://travis-ci.org/crysalead/filter.png?branch=master)](https://travis-ci.org/crysalead/filter) [![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/crysalead/filter/badges/quality-score.png?s=cfaf1c7855ec7c5e778f16a7c1321a3177a57771)](https://scrutinizer-ci.com/g/crysalead/filter/) [![Code Coverage](https://scrutinizer-ci.com/g/crysalead/filter/badges/coverage.png?s=50b3c56bd62e6a14c1c15b7c7f5c26584ff2bf7a)](https://scrutinizer-ci.com/g/crysalead/filter/)
+[![Build Status](https://travis-ci.org/crysalead/filter.png?branch=master)](https://travis-ci.org/crysalead/filter) [![Code Coverage](https://scrutinizer-ci.com/g/crysalead/filter/badges/coverage.png?s=50b3c56bd62e6a14c1c15b7c7f5c26584ff2bf7a)](https://scrutinizer-ci.com/g/crysalead/filter/)
 
 Method filtering is an alternative to event-driven architectures. It provide a way to inject/override some logic in the program flow without polluting too much the original source code.
 
