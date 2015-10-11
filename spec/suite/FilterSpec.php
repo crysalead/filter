@@ -26,7 +26,7 @@ describe("Filter", function() {
 	});
 
 	afterEach(function() {
-		Filter::clear();
+		Filter::reset();
 		Filter::enable();
 	});
 
@@ -237,7 +237,7 @@ describe("Filter", function() {
 		it("exports the `Filter` class data", function() {
 			$registered = Filter::registered();
 			expect($registered)->toHaveLength(3);
-			Filter::clear();
+			Filter::reset();
 			Filter::register($registered);
 			$registered = Filter::registered();
 			expect($registered)->toHaveLength(3);
@@ -277,10 +277,10 @@ describe("Filter", function() {
 
 	});
 
-	describe("clear", function() {
+	describe("resets", function() {
 
-		it("clear all the filters", function() {
-			Filter::clear();
+		it("clears all the filters", function() {
+			Filter::reset();
 			expect(Filter::registered('spec.my_prefix'))->toBe(false);
 			expect(Filter::registered('spec.be_prefix'))->toBe(false);
 			expect(Filter::registered('spec.no_chain'))->toBe(false);

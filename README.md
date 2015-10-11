@@ -200,7 +200,7 @@ Filter::filters($filters);
 ### Clearing the registred closure & applied filters.
 
 ```php
-Filter::clear();
+Filter::reset();
 ```
 
 Note: It also detaches all filters attached statically (i.e it doesn't affect filters on intance's methods).

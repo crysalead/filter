@@ -226,7 +226,7 @@ class Filter
     /**
      * Remove filters for all classes.
      */
-    public static function clear()
+    public static function reset()
     {
         static::$_aspects = [];
         static::$_methodFilters = [];
