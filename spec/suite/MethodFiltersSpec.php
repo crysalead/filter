@@ -9,7 +9,7 @@ describe('MethodFilters', function() {
 		$this->methodFilters = new MethodFilters();
 	});
 
-	describe("apply/filters", function() {
+	describe("->apply/filters()", function() {
 
 		it("applies a filter to a method", function() {
 
@@ -55,7 +55,7 @@ describe('MethodFilters', function() {
 
 	});
 
-	describe("detach", function() {
+	describe("->detach()", function() {
 
 		it("detaches a filter", function() {
 
@@ -109,7 +109,7 @@ describe('MethodFilters', function() {
 
 		});
 
-		it("clear all filters", function() {
+		it("clears all filters", function() {
 
 			$this->methodFilters->apply('myMethod', 'spec.hello_world', function() { return 'Hello World!'; });
 			$this->methodFilters->apply('myMethod', 'spec.hello_beautiful_world', function() { return 'Hello Beautiful World!'; });

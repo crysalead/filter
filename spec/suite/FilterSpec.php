@@ -41,7 +41,7 @@ describe("Filter", function() {
 			});
 		});
 
-		describe("apply", function() {
+		describe("::apply()", function() {
 
 			it("applies a filter which override a parameter", function() {
 
@@ -91,7 +91,7 @@ describe("Filter", function() {
 
 		});
 
-		describe("detach", function() {
+		describe("::detach()", function() {
 
 			it("detaches a filters", function() {
 
@@ -103,7 +103,7 @@ describe("Filter", function() {
 
 		});
 
-		describe("filters", function() {
+		describe("::filters()", function() {
 
 			it("gets filters of a context", function() {
 
@@ -116,9 +116,9 @@ describe("Filter", function() {
 
 		});
 
-		describe("enable", function() {
+		describe("::enable()", function() {
 
-			it("disabled the filter system", function() {
+			it("disables the filter system", function() {
 				Filter::apply($this->mock, 'filterable', 'spec.my_prefix');
 				Filter::enable(false);
 				expect($this->mock->filterable('World!'))->toBe('Hello World!');
@@ -139,7 +139,7 @@ describe("Filter", function() {
 			});
 		});
 
-		describe("apply", function() {
+		describe("::apply()", function() {
 
 			it("applies a filter and override a parameter", function() {
 				$class = $this->class;
@@ -204,7 +204,7 @@ describe("Filter", function() {
 
 		});
 
-		describe("filters", function() {
+		describe("::filters()", function() {
 
 			it("exports filters setted as a class level", function() {
 				Filter::apply($this->class, 'filterable', 'spec.my_prefix');
@@ -223,7 +223,7 @@ describe("Filter", function() {
 		});
 	});
 
-	describe("apply", function() {
+	describe("::apply()", function() {
 
 		it("throws an Exception when trying to apply a filter on an unfilterable context", function() {
 			$closure = function() { Filter::apply(null, 'filterable', 'spec.my_prefix'); };
@@ -232,7 +232,7 @@ describe("Filter", function() {
 
 	});
 
-	describe("registered", function() {
+	describe("::registered()", function() {
 
 		it("exports the `Filter` class data", function() {
 			$registered = Filter::registered();
@@ -244,9 +244,9 @@ describe("Filter", function() {
 		});
 	});
 
-	describe("register", function() {
+	describe("::register()", function() {
 
-		it("register a closure", function() {
+		it("registers a closure", function() {
 			Filter::register('spec.newclosure', function($chain, $message) {
 				$message = "My {$message}";
 				return $chain->next($message);
@@ -254,7 +254,7 @@ describe("Filter", function() {
 			expect(Filter::registered('spec.newclosure'))->toBe(true);
 		});
 
-		it("register a closure with no name", function() {
+		it("registers a closure with no name", function() {
 			$name = Filter::register(function($chain, $message) {
 				$message = "My {$message}";
 				return $chain->next($message);
@@ -264,9 +264,9 @@ describe("Filter", function() {
 
 	});
 
-	describe("unregister", function() {
+	describe("::unregister()", function() {
 
-		it("unregister a closure", function() {
+		it("unregisters a closure", function() {
 			Filter::register('spec.newclosure', function($chain, $message) {
 				$message = "My {$message}";
 				return $chain->next($message);
@@ -277,7 +277,7 @@ describe("Filter", function() {
 
 	});
 
-	describe("resets", function() {
+	describe("::resets()", function() {
 
 		it("clears all the filters", function() {
 			Filter::reset();

@@ -21,7 +21,7 @@ describe("Chain", function() {
 		$this->chain = new Chain(compact('filters', 'method', 'params'));
 	});
 
-	describe("params", function() {
+	describe("->params()", function() {
 
 		it("gets the params", function() {
 
@@ -31,7 +31,7 @@ describe("Chain", function() {
 
 	});
 
-	describe("method", function() {
+	describe("->method()", function() {
 
 		it("gets the methods", function() {
 
