@@ -20,12 +20,13 @@ class Chain implements \Iterator, \Countable
     /**
      * The params of the method being filtered.
      *
-     * @var string
+     * @var array
      */
     protected $_params = [];
 
     /**
      * Construct the collection object
+     * @param array $options
      */
     public function __construct($options = [])
     {
@@ -69,7 +70,7 @@ class Chain implements \Iterator, \Countable
     /**
      * Returns the key of the current item.
      *
-     * @return scalar Scalar on success or `null` on failure.
+     * @return mixed Scalar on success or `null` on failure.
      */
     public function key()
     {
