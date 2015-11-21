@@ -2,8 +2,6 @@
 namespace filter;
 
 use Exception;
-use filter\Chain;
-use filter\MethodFilters;
 
 class Filter
 {
@@ -17,14 +15,14 @@ class Filter
     /**
      * An array of `Closure` indexed by a name identifier.
      *
-     * @var array
+     * @var \Closure[]
      */
     protected static $_aspects = [];
 
     /**
      * An array of `MethodFilters` indexed by class name.
      *
-     * @var array
+     * @var MethodFilters[]
      */
     protected static $_methodFilters = [];
 
@@ -38,15 +36,15 @@ class Filter
     /**
      * Registers an aspect in the system.
      *
-     * @param  string|Closure $name     The aspect name identifier or directly the aspect.
-     * @param  Closure        $callback The aspect.
-     * @return string                   The aspect name identifier.
+     * @param  string|\Closure|array    $name   The aspect name identifier, directly the aspect or an array of aspects.
+     * @param  \Closure                 $aspect The aspect.
+     * @return string|array                     The aspect name identifier or an array of aspects.
      */
     public static function register($name, $aspect = null)
     {
         if (is_array($name)) {
             static::$_aspects = $name;
-            return;
+            return static::$_aspects;
         }
         if ($aspect === null) {
             $aspect = $name;
@@ -59,7 +57,7 @@ class Filter
     /**
      *  Registers an aspect in the system.
      *
-     * @param array $name The aspect name identifier.
+     * @param string $name The aspect name identifier.
      */
     public static function unregister($name)
     {
@@ -84,8 +82,8 @@ class Filter
      * Applies a filter to a method.
      *
      * @param  mixed     $context  The instance or class name context to apply a new filter.
-     * @param  string    $method   The name of the method to apply the filter.
-     * @param  array     $name     The filter name identifier.
+     * @param  string    $methods  The name of the method to apply the filter.
+     * @param  string    $name     The filter name identifier.
      * @return string              The name reference of the applied filter.
      * @throws Exception
      */
@@ -108,7 +106,7 @@ class Filter
     }
 
     /**
-     * Detaches a filter completly, by class/instance or on a method basis.
+     * Detaches a filter completely, by class/instance or on a method basis.
      *
      * @param  mixed   $context The instance or class name context to apply a new filter.
      * @param  string  $method  The name of the method to apply the filter.
@@ -145,7 +143,7 @@ class Filter
      *                          If `$context` is an array use `$context` as the whole filters data.
      *                          Otherwise `$context` stands for the class/instance context.
      * @param  string  $method  The name of the method to get the filters from.
-     * @return array            The whole filters data or filters associated to a class/instance's method.
+     * @return mixed            The whole filters data or filters associated to a class/instance's method.
      */
     public static function filters($context = null, $method = null)
     {
@@ -154,7 +152,7 @@ class Filter
         }
         if (is_array($context)) {
             static::$_methodFilters = $context;
-            return;
+            return static::$_methodFilters;
         }
 
         $result = [];
@@ -195,12 +193,12 @@ class Filter
     /**
      * Cuts the normal execution of a method to run all applied filter for the method.
      *
-     * @param  mixed   $context  The instance or class name context to perform the filtering on.
-     * @param  string  $method   The name of the method which is going the be filtered.
-     * @param  array   $params   The parameters passed to the original method.
-     * @param  Closure $callback The original method logic closure.
-     * @param  array   $filters  Additional filters to apply to the method for this call only.
-     * @return mixed             Returns The result of the chain.
+     * @param  mixed    $context  The instance or class name context to perform the filtering on.
+     * @param  string   $method   The name of the method which is going the be filtered.
+     * @param  array    $params   The parameters passed to the original method.
+     * @param  \Closure $callback The original method logic closure.
+     * @param  array    $filters  Additional filters to apply to the method for this call only.
+     * @return mixed              Returns The result of the chain.
      */
     public static function on($context, $method, $params, $callback, $filters = [])
     {
@@ -217,6 +215,8 @@ class Filter
 
     /**
      * Enable/Disable the filter system.
+     *
+     * @param bool $active
      */
     public static function enable($active = true)
     {
