@@ -2,6 +2,6 @@
 <?php
 
 $kahlan = 'https://raw.githubusercontent.com/crysalead/kahlan/master/composer.json';
-$version = preg_replace('/[^\d\.]+/', '', json_decode(file_get_contents($kahlan), true)['require']['crysalead/jit']);
+$version = preg_replace('/[^\d\.]+/', '', json_decode(file_get_contents($kahlan), true)['require']['crysalead/filter']);
 
 `COMPOSER_ROOT_VERSION={$version} composer install`;
