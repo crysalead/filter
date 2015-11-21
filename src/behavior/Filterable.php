@@ -9,10 +9,10 @@ trait Filterable
     protected $_methodFilters = null;
 
     /**
-     * Getter/setter of the `MethodFilters` instance.
+     * Gets/sets of the `MethodFilters` instance.
      *
-     * @param  $methodFilters If `null` return the `MethodFilters` instance, otherwise
-     *                        set the `MethodFilters` instance to the passed parameter.
+     * @param  object|null $methodFilters If `null` return the `MethodFilters` instance, otherwise
+     *                                    set the `MethodFilters` instance to the passed parameter.
      * @return object
      */
     public function methodFilters($methodFilters = null)

@@ -20,20 +20,22 @@ class Chain implements \Iterator, \Countable
     /**
      * The params of the method being filtered.
      *
-     * @var string
+     * @var array
      */
     protected $_params = [];
 
     /**
      * Construct the collection object
+     *
+     * @param array $config The config array
      */
-    public function __construct($options = [])
+    public function __construct($config = [])
     {
         $defaults = ['filters' => [], 'method' => null, 'params' => []];
-        $options += $defaults;
-        $this->_filters= $options['filters'];
-        $this->_method = $options['method'];
-        $this->_params = $options['params'];
+        $config += $defaults;
+        $this->_filters= $config['filters'];
+        $this->_method = $config['method'];
+        $this->_params = $config['params'];
     }
 
     /**
@@ -69,7 +71,7 @@ class Chain implements \Iterator, \Countable
     /**
      * Returns the key of the current item.
      *
-     * @return scalar Scalar on success or `null` on failure.
+     * @return string The current item key or `null` on failure.
      */
     public function key()
     {

@@ -1,9 +1,8 @@
 <?php
 namespace filter;
 
+use Closure;
 use Exception;
-use filter\Chain;
-use filter\MethodFilters;
 
 class Filter
 {
@@ -38,9 +37,9 @@ class Filter
     /**
      * Registers an aspect in the system.
      *
-     * @param  string|Closure $name     The aspect name identifier or directly the aspect.
-     * @param  Closure        $callback The aspect.
-     * @return string                   The aspect name identifier.
+     * @param  string|array|Closure $name     The aspect name identifier, the aspects array or the aspect closure.
+     * @param  Closure              $callback The aspect closure when `$name` is a string.
+     * @return string|null                    The registered aspect name identifier or `null` for multiple registration.
      */
     public static function register($name, $aspect = null)
     {
@@ -57,9 +56,9 @@ class Filter
     }
 
     /**
-     *  Registers an aspect in the system.
+     * Unregisters an aspect in the system.
      *
-     * @param array $name The aspect name identifier.
+     * @param string $name The aspect name identifier to unregister.
      */
     public static function unregister($name)
     {
@@ -69,7 +68,7 @@ class Filter
     /**
      * Checks if as aspect exists or returns all registered aspects if `$name` is `null`.
      *
-     * @param  string  $name The aspect name identifier or `null` to get all registered aspects.
+     * @param  string|null $name The aspect name identifier or `null` to get all registered aspects.
      * @return boolean
      */
     public static function registered($name = null)
@@ -83,10 +82,10 @@ class Filter
     /**
      * Applies a filter to a method.
      *
-     * @param  mixed     $context  The instance or class name context to apply a new filter.
-     * @param  string    $method   The name of the method to apply the filter.
-     * @param  array     $name     The filter name identifier.
-     * @return string              The name reference of the applied filter.
+     * @param  mixed        $context  The instance or class name context to apply a new filter.
+     * @param  string|array $methods  The name or array of method names to be filtered.
+     * @param  string       $name     The filter name to apply.
+     * @return string                 The name reference of the applied filter.
      * @throws Exception
      */
     public static function apply($context, $methods, $name)
@@ -108,11 +107,11 @@ class Filter
     }
 
     /**
-     * Detaches a filter completly, by class/instance or on a method basis.
+     * Detaches a filter completely, by class/instance or on a method basis.
      *
-     * @param  mixed   $context The instance or class name context to apply a new filter.
-     * @param  string  $method  The name of the method to apply the filter.
-     * @param  array   $name    The filter name identifier.
+     * @param  mixed  $context   The instance or class name context to apply a new filter.
+     * @param  string $method    The name of the method to apply the filter.
+     * @param  string $name|null The filter name to detach. If `null` detaches all filters.
      */
     public static function detach($context, $method, $name = null)
     {
@@ -141,11 +140,11 @@ class Filter
      * Gets the whole filters data or filters associated to a class/instance's method.
      * Or sets the whole filters data.
      *
-     * @param  mixed   $context If `null` returns the whole filters data.
-     *                          If `$context` is an array use `$context` as the whole filters data.
-     *                          Otherwise `$context` stands for the class/instance context.
-     * @param  string  $method  The name of the method to get the filters from.
-     * @return array            The whole filters data or filters associated to a class/instance's method.
+     * @param  mixed       $context If `null` returns the whole filters data.
+     *                              If `$context` is an array use `$context` as the whole filters data.
+     *                              Otherwise `$context` stands for the class/instance context.
+     * @param  string|null $method  The name of the method to get the filters from or `null` to get all of them.
+     * @return array                The whole filters data or filters associated to a class/instance's method.
      */
     public static function filters($context = null, $method = null)
     {
@@ -153,8 +152,7 @@ class Filter
             return static::$_methodFilters;
         }
         if (is_array($context)) {
-            static::$_methodFilters = $context;
-            return;
+            return static::$_methodFilters = $context;
         }
 
         $result = [];
@@ -174,7 +172,7 @@ class Filter
      * @param  string  $method  The name of the method to get the filters from.
      * @return array            The whole filters data or filters associated to a class/instance's method.
      */
-    public static function _classFilters($context, $method = null) {
+    public static function _classFilters($context, $method) {
 
         if (isset(static::$_cachedFilters[$context][$method])) {
             return static::$_cachedFilters[$context][$method];
@@ -216,7 +214,9 @@ class Filter
     }
 
     /**
-     * Enable/Disable the filter system.
+     * Enables/disables the filter system.
+     *
+     * @param boolean $active
      */
     public static function enable($active = true)
     {
@@ -224,7 +224,7 @@ class Filter
     }
 
     /**
-     * Remove filters for all classes.
+     * Removes filters for all classes.
      */
     public static function reset()
     {
