@@ -1,9 +1,9 @@
 <?php
-namespace filter\spec\suite;
+namespace Lead\Filter\Spec\Suite;
 
 use Exception;
-use kahlan\plugin\Stub;
-use filter\Filter;
+use Lead\Filter\Filter;
+use Kahlan\Plugin\Stub;
 
 describe("Filter", function() {
 
@@ -33,7 +33,7 @@ describe("Filter", function() {
 	context("with an instance context", function() {
 
 		beforeEach(function() {
-			$this->mock = Stub::create(['uses' => ['filter\behavior\Filterable']]);
+			$this->mock = Stub::create(['uses' => ['Lead\Filter\Behavior\Filterable']]);
 			Stub::on($this->mock)->method('filterable', function() {
 				return Filter::on($this, 'filterable', func_get_args(), function($chain, $message) {
 					return "Hello {$message}";

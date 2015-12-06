@@ -1,8 +1,8 @@
 <?php
-namespace filter\spec\suite;
+namespace Lead\Filter\Spec\Suite;
 
-use kahlan\plugin\Stub;
-use filter\Chain;
+use Lead\Filter\Chain;
+use Kahlan\Plugin\Stub;
 
 describe("Chain", function() {
 

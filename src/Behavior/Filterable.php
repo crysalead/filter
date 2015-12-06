@@ -1,8 +1,8 @@
 <?php
-namespace filter\behavior;
+namespace Lead\Filter\Behavior;
 
 use Exception;
-use filter\MethodFilters;
+use Lead\Filter\MethodFilters;
 
 trait Filterable
 {

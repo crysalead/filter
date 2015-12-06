@@ -1,7 +1,7 @@
 <?php
-namespace filter\spec\suite;
+namespace Lead\Filter\Spec\Suite;
 
-use filter\MethodFilters;
+use Lead\Filter\MethodFilters;
 
 describe('MethodFilters', function() {
 

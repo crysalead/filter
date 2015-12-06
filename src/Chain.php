@@ -1,5 +1,5 @@
 <?php
-namespace filter;
+namespace Lead\Filter;
 
 class Chain implements \Iterator, \Countable
 {

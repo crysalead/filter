@@ -50,8 +50,8 @@ Ok, now let's make methods filterable first:
 ```php
 namespace city;
 
-use filter\Filter;
-use filter\behavior\Filterable;
+use Lead\Filter\Filter;
+use Lead\Filter\Behavior\Filterable;
 
 class Home {
 
@@ -126,7 +126,7 @@ class StaticClass {
 
 On a dynamic method:
 ```php
-use filter\behavior\Filterable;
+use Lead\Filter\Behavior\Filterable;
 
 class DynamicClass {
 	use Filterable;
