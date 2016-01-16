@@ -9,10 +9,11 @@
         }
     ],
     "require": {
-        "php": ">=5.4"
+        "php": ">=5.5",
+        "crysalead/jit": "~2.1"
     },
     "require-dev": {
-        "crysalead/kahlan": "~2.0"
+        "crysalead/kahlan": "~2.1"
     },
     "autoload": {
         "psr-4": {

@@ -7,91 +7,97 @@ Method filtering is an alternative to event-driven architectures. It provide a w
 There's a couple of different existing approches which try to bring the AOP concepts in PHP.
  * [AOP](https://github.com/AOP-PHP/AOP) (PECL extension)
  * [Go!](https://github.com/lisachenko/go-aop-php)
- * [Ray Aop](https://github.com/koriym/Ray.Aop)
+ * [Ray Aop](https://github.com/ray-di/Ray.Aop)
 
-However I still think that the [lihtium](https://github.com/UnionOfRAD/lithium) implementation is simpler to implements and the overhead still minimal when AOP is required for a couple of methods in a projet.
+Another AOP alternative is the well known middleware pattern. However I found the [lihtium](https://github.com/UnionOfRAD/lithium) implementation simpler and more intuitive to use.
 
-Like the lithium's version this implementation also require some boilerplate code to make filterable methods. Event if there's some slighly differences in the API the logic is roughly the same.
+Anyhow all this approaches aims to provide the following control on methods:
 
-## Example
+```
+        │                ▲
+        │                │
+ ┌──────┼────────────────┼──────┐
+ │      │    Filter 1    │      │
+ │      │                │      │
+ │ ┌────┼────────────────┼────┐ │
+ │ │    │    Filter 2    │    │ │
+ │ │    │                │    │ │
+ │ │┌───┼────────────────┼───┐│ │
+ │ ││   │ Implementation │   ││ │
+ │ ││   ▼                │   ││ │
+ │ ││                        ││ │
+ │ │└────────────────────────┘│ │
+ │ └──────────────────────────┘ │
+ └──────────────────────────────┘
+```
 
-So let's take a simple example:
+## The example
+
+So let's take the following code example:
 
 ```php
-class Home {
+class Home
+{
+    public static function version()
+    {
+        return '1.0.0';
+    }
 
-	public static function version() {
-		return '1.0.0';
-	}
-
-	public function enter($name) {
-		return "Welcome {$name}!";
-	}
+    public function enter($name)
+    {
+        return "Welcome {$name}!";
+    }
 }
 
 ```
 
-With such class you should be able to run the following:
+At this point it's not possible to change method's behavior like in JavaScript or any other more permissive language. At this point we can make the above method in two ways. First by manually adding some boilerplate code to make your methods filterable or by simply enabling some Just In Time patching which will do the rewriting on the fly.
+
+## The manually way
+
+To make methods of the above example filterable, we will need to add some boilerplate code like so:
 
 ```php
-echo "You are using the Home " . Home::version();
-$home = new Home();
-echo $home->enter('Bob');
-```
+namespace City;
 
-And it will produce:
-```
-You are using the Home 1.0.0
-Welcome Bob
-```
-
-Ok, now let's make methods filterable first:
-
-```php
-namespace city;
-
-use Lead\Filter\Filter;
-use Lead\Filter\Behavior\Filterable;
+use Lead\Filter\Filters;
 
 class Home {
 
-	use Filterable; // Only required for `enter` (i.e. instance methods)
+    public static function version()
+    {
+        Filters::run(get_called_class(), __FUNCTION__, [], function($next) {
+            return '1.0.0'; // Your inchanged code here
+        });
+    }
 
-	public static function version() {
-		Filter::on(get_called_class(), __FUNCTION__, func_get_args(), function($chain) {
-			return '1.0.0'; // Your inchanged code here
-		});
-	}
-
-	public function enter($name) {
-		Filter::on($this, __FUNCTION__, func_get_args(), function($chain, $name) {
-			return "Welcome {$name}!"; // Your inchanged code here
-		});
-	}
+    public function enter($name)
+    {
+        Filters::run($this, __FUNCTION__, [$name], function($next, $name) {
+            return "Welcome {$name}!"; // Your inchanged code here
+        });
+    }
 }
 
 ```
 
-So we end up doing a simple wrapping of the core implementation using a closure. Notice the use of `get_called_class()` or `$this` depends if you are in a static class or not. Don't forget the add all method parameters just after the mandatory `$chain` parameter in the closure definition. `$chain` will always be the first parameter and represents the chain of filters to apply.
+All the method logic has been wrapped up in a closure which also requires a mandatory `$next` parameter as first parameter. `$next` represents the chain of filters to apply and will be used in filters to run the next appliable filter.
 
-Once the code rewrited, we are now ready to attach some filters to change the default behavior of methods.
+Once the code rewrited, it's now possible to setup filters:
 
 ```php
-Filter::register('city.version', function($chain) { // Registering an aspect.
-	$version = $chain->next();
-	return "Version: {$version}";
+use Lead\Filter\Filters;
+
+Filters::apply('city\Home::version', function($next) {
+    $version = $next();
+    return "Version: {$version}";
 });
-
-Filter::register('city.civility', function($chain, $name) { // Registering another aspect.
-	$name = "Mister {$name}";
-	return $chain->next($name);
-});
-
-
-Filter::apply('city\Home', 'version' 'city.version'); // Applying `'city.version'` to the static method.
 
 $home = new Home();
-Filter::apply($home, 'enter', 'city.civility'); // Applying `'city.civility'` the the intance method.
+Filters::apply([$home, 'enter'], function($next, $name) {
+    $name = "Mister {$name}";
+    return $next($name);
+});
 
 echo "You are using the Home " . Home::version();
 echo $home->enter('Bob');
@@ -103,104 +109,86 @@ You are using the Home Version 1.0.0
 Welcome Mister Bob
 ```
 
-## FAQ
+## The automatic way
 
-- **Is it possible to apply a filter for all instances ?** Yes, for such behavior, you need to set your filter using the class name string as context.
+The second option is to make this rewriting step automatic and transparent for the user.
 
-- **If sub class inherit from filters setted at a parent class level ?** Yes.
+To do so, the only step is to run `Filters::patch()` as soon as possible. For example just after the composer autoloader include:
+
+```php
+include __DIR__ . '/../vendor/autoload.php';
+
+use Lead\Filter\Filters;
+
+Filters::patch(true);
+```
+
+Note: The patching will only work for classes loaded by the composer autoloader. So if some classes is included using `require` or `include` or has already been loaded before the `Filters::patch(true)` call, it won't be patched.
+
+Using `Filters::patch(true)` is the no brainer way to setup the patcher but you should keep in mind that all your code as well as your vendor code will be patched. Even if patched classes are cached once patched, having filters for all methods can be time consuming.
+
+So the prefered approach is to only patch needed files like in the following example:
+
+```php
+Filters::patch([
+ 'City\Home',
+ 'An\Example\ClassName::foo',
+ 'A\Second\Example\ClassName' => ['foo', 'bar'],
+]);
+```
+
+It's therefore possible to makes your own methods filterable as well as vendor methods.
 
 ## API
 
-### Making a method filterable
+### Make a method filterable
 
-On a static method:
+Either manually with:
+
 ```php
-class StaticClass {
-	public static function($param1, $param2) {
-		Filter::on(get_called_class(), __FUNCTION__, func_get_args(), function($chain, $param1, $param2) {
-			// Method's logic here
-		});
-	}
-}
+Filters::run($context, $method, $args, $closure);
 ```
 
-On a dynamic method:
+Or automatically:
+
 ```php
-use Lead\Filter\Behavior\Filterable;
-
-class DynamicClass {
-	use Filterable;
-
-	public function($param1, $param2) {
-		Filter::on($this, __FUNCTION__, func_get_args(), function($chain, $param1, $param2) {
-			// Method's logic here
-		});
-	}
-}
+Filters::patch(['City\Home']);
 ```
 
-### Registering an aspect
+### Apply a filter to a class or an instance
 
 ```php
-Filter::register('an_aspect_name', function($chain, $param1, $param2, ...) {
-	// Method's logic here
-	return $chain->next($param1, $param2, ...); // Process the chain if needed
-});
+$id = Filters::apply($callable, $closure);
 ```
 
-### Appling a filter to a class or an instance
+### Detach a filter from a class or an instance
 
+Detach all filters associated to a callable:
 ```php
-Filter::apply($context, 'method_name', 'an_aspect_name');
+Filters::detach($callable);
 ```
 
-### Detaching a filter from a class or an instance
-
-Detach all filters associated to a method:
+Detach a specific filter only:
 ```php
-Filter::detach($context, 'method_name');
-```
-
-Detach a named filter only:
-```php
-Filter::detach($context, 'method_name', 'an_aspect_name');
-```
-
-Detach a named filters only but for all class's method:
-```php
-Filter::detach($context, null, 'an_aspect_name');
-```
-
-### Checking if a closure is registred
-
-```php
-Filter::registred('an_aspect_name');
-```
-
-### Unregistering a closure
-
-```php
-Filter::unregister('an_aspect_name');
+Filters::detach($id);
 ```
 
 ### Export/Restore the filtering system.
 
 Getter:
 ```php
-$registered = Filter::registered();
-$filters = Filter::filters();
+$filters = Filters::get();
 ```
 
 Setter:
 ```php
-Filter::register($registered);
-Filter::filters($filters);
+Filters::set($filters);
 ```
 
 ### Clearing the registred closure & applied filters.
 
 ```php
-Filter::reset();
+Filters::reset();
 ```
 
 Note: It also detaches all filters attached statically (i.e it doesn't affect filters on intance's methods).
@@ -208,8 +196,14 @@ Note: It also detaches all filters attached statically (i.e it doesn't affect fi
 ### Enable/Disable the filter system globaly
 
 ```php
-Filter::enable(); // Enable
-Filter::enable(false); // Disable
+Filters::enable(); // Enable
+Filters::enable(false); // Disable
 ```
 
-Note: It doesn't detach any filters
+Note: It doesn't detach any filters but simply bypasses filters on `Filters::run()`.
+
+## FAQ
+
+- **Is it possible to apply a filter for all instances ?** Yes, for such behavior, you need to set your filter using the class name string as context.
+
+- **If sub class inherit from filters setted at a parent class level ?** Yes.
