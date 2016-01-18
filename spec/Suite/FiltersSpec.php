@@ -10,6 +10,7 @@ use Kahlan\Plugin\Stub;
 use Lead\Filter\Spec\Fixture\Jit\Patcher\Parrot;
 use Lead\Filter\Spec\Fixture\Jit\Patcher\Parrot2;
 use Lead\Filter\Spec\Fixture\Jit\Patcher\Parrot3;
+use Lead\Filter\Spec\Fixture\FilterExample;
 
 describe("Filters", function() {
 
@@ -38,42 +39,37 @@ describe("Filters", function() {
     context("with an instance context", function() {
 
         beforeEach(function() {
-            $this->mock = Stub::create();
-            Stub::on($this->mock)->method('filterable', function() {
-                return Filters::run($this, 'filterable', func_get_args(), function($next, $message) {
-                    return "Hello {$message}";
-                });
-            });
+            $this->stub = new FilterExample();
         });
 
         describe("::apply()", function() {
 
             it("applies a filter", function() {
 
-                Filters::apply($this->mock, 'filterable', $this->myPrefix);
-                expect($this->mock->filterable('World!'))->toBe('Hello My World!');
+                Filters::apply($this->stub, 'filterable', $this->myPrefix);
+                expect($this->stub->filterable('World!'))->toBe('Hello My World!');
 
             });
 
             it("applies filters on each call", function() {
 
-                Filters::apply($this->mock, 'filterable', $this->myPrefix);
-                expect($this->mock->filterable('World!'))->toBe('Hello My World!');
-                expect($this->mock->filterable('World!'))->toBe('Hello My World!');
-                expect($this->mock->filterable('World!'))->toBe('Hello My World!');
+                Filters::apply($this->stub, 'filterable', $this->myPrefix);
+                expect($this->stub->filterable('World!'))->toBe('Hello My World!');
+                expect($this->stub->filterable('World!'))->toBe('Hello My World!');
+                expect($this->stub->filterable('World!'))->toBe('Hello My World!');
 
             });
 
             it("applies a filter which break the chain", function() {
 
-                Filters::apply($this->mock, 'filterable', $this->noChain);
-                expect($this->mock->filterable('World!'))->toBe("No Man's World!");
+                Filters::apply($this->stub, 'filterable', $this->noChain);
+                expect($this->stub->filterable('World!'))->toBe("No Man's World!");
 
             });
 
             it("applies a custom filter", function() {
 
-                Stub::on($this->mock)->method('filterable', function() {
+                Stub::on($this->stub)->method('filterable', function() {
                     $closure = function($next, $message) {
                         return "Hello {$message}";
                     };
@@ -83,14 +79,14 @@ describe("Filters", function() {
                     };
                     return Filters::run($this, 'filterable', func_get_args(), $closure, [$custom]);
                 });
-                expect($this->mock->filterable('World!'))->toBe("Hello Custom World!");
+                expect($this->stub->filterable('World!'))->toBe("Hello Custom World!");
 
             });
 
             it("applies all filters set on a classname", function() {
 
-                Filters::apply(get_class($this->mock), 'filterable', $this->myPrefix);
-                expect($this->mock->filterable('World!'))->toBe('Hello My World!');
+                Filters::apply(FilterExample::class, 'filterable', $this->myPrefix);
+                expect($this->stub->filterable('World!'))->toBe('Hello My World!');
 
             });
 
@@ -100,17 +96,17 @@ describe("Filters", function() {
 
             it("detaches a filter", function() {
 
-                $id = Filters::apply($this->mock, 'filterable', $this->myPrefix);
+                $id = Filters::apply($this->stub, 'filterable', $this->myPrefix);
                 expect(Filters::detach($id))->toBeAnInstanceOf('Closure');
-                expect($this->mock->filterable('World!'))->toBe('Hello World!');
+                expect($this->stub->filterable('World!'))->toBe('Hello World!');
 
             });
 
             it("detaches all filters attached to a callable", function() {
 
-                $id = Filters::apply($this->mock, 'filterable', $this->myPrefix);
-                expect(Filters::detach($this->mock, 'filterable'))->toHaveLength(1);
-                expect($this->mock->filterable('World!'))->toBe('Hello World!');
+                $id = Filters::apply($this->stub, 'filterable', $this->myPrefix);
+                expect(Filters::detach($this->stub, 'filterable'))->toHaveLength(1);
+                expect($this->stub->filterable('World!'))->toBe('Hello World!');
 
             });
 
@@ -134,8 +130,8 @@ describe("Filters", function() {
 
             it("gets filters attached to a callable", function() {
 
-                Filters::apply($this->mock, 'filterable', $this->myPrefix);
-                $filters = Filters::filters($this->mock, 'filterable');
+                Filters::apply($this->stub, 'filterable', $this->myPrefix);
+                $filters = Filters::filters($this->stub, 'filterable');
                 expect($filters)->toBeAn('array')->toHaveLength(1);
                 expect(reset($filters))->toBeAnInstanceOf('Closure');
 
@@ -147,9 +143,9 @@ describe("Filters", function() {
 
             it("disables the filter system", function() {
 
-                Filters::apply($this->mock, 'filterable', $this->myPrefix);
+                Filters::apply($this->stub, 'filterable', $this->myPrefix);
                 Filters::enable(false);
-                expect($this->mock->filterable('World!'))->toBe('Hello World!');
+                expect($this->stub->filterable('World!'))->toBe('Hello World!');
 
             });
 

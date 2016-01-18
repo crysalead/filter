@@ -68,7 +68,7 @@ class Filters
             $instance = null;
         }
 
-        if (!is_callable([$context, $method])) {
+        if (!method_exists($context, $method) && !is_callable($context, $method)) {
             throw new InvalidArgumentException("The provided callable is invalid.");
         }
 
