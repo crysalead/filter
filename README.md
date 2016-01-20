@@ -4,14 +4,12 @@
 
 Method filtering is an alternative to event-driven architectures. It provide a way to inject/override some logic in the program flow without polluting too much the original source code.
 
-There's a couple of different existing approches which try to bring the AOP concepts in PHP.
+There's a couple of different existing approches which try to bring the AOP concepts in PHP:
  * [AOP](https://github.com/AOP-PHP/AOP) (PECL extension)
+ * [li3](https://github.com/UnionOfRAD/lithium)
  * [Go!](https://github.com/lisachenko/go-aop-php)
- * [Ray Aop](https://github.com/ray-di/Ray.Aop)
 
-Another AOP alternative is the well known middleware pattern. However I found the [lihtium](https://github.com/UnionOfRAD/lithium) implementation simpler and more intuitive to use.
-
-Anyhow all this approaches aims to provide the following control on methods:
+All this approaches aims to provide the following control on methods:
 
 ```
         │                ▲
@@ -30,6 +28,8 @@ Anyhow all this approaches aims to provide the following control on methods:
  │ └──────────────────────────┘ │
  └──────────────────────────────┘
 ```
+
+The goal of this AOP library is to bring the simplicity of [li3](https://github.com/UnionOfRAD/lithium) filtering system with a Just In Time code patching technique so any kind of method will be filterable (even vendor's one).
 
 ## The example
 
@@ -55,7 +55,9 @@ At this point it's not possible to change method's behavior like in JavaScript o
 
 ## The manually way
 
-To make methods of the above example filterable, we will need to add some boilerplate code like so:
+To show how AOP works under the hood, I'll first show how to make a method filterable manually (i.e. without the Just In Time patching).
+
+So to make a method filterable, some boilerplate code is required:
 
 ```php
 namespace City;
@@ -81,20 +83,20 @@ class Home {
 
 ```
 
-All the method logic has been wrapped up in a closure which also requires a mandatory `$next` parameter as first parameter. `$next` represents the chain of filters to apply and will be used in filters to run the next appliable filter.
+The idea is to wrap the method logic in a closure and prepend a mandatory `$next` parameter in the parameter list. `$next` represents the chain of filters to apply and will be used in filters to execute the next appliable filter.
 
 Once the code rewrited, it's now possible to setup filters:
 
 ```php
 use Lead\Filter\Filters;
 
-Filters::apply('city\Home::version', function($next) {
+Filters::apply('city\Home', 'version', function($next) {
     $version = $next();
     return "Version: {$version}";
 });
 
 $home = new Home();
-Filters::apply([$home, 'enter'], function($next, $name) {
+Filters::apply($home, 'enter', function($next, $name) {
     $name = "Mister {$name}";
     return $next($name);
 });
@@ -111,9 +113,9 @@ Welcome Mister Bob
 
 ## The automatic way
 
-The second option is to make this rewriting step automatic and transparent for the user.
+For the automatic way, we are going to use a JIT code patcher to make this rewriting step automatic and transparent for the user.
 
-To do so, the only step is to run `Filters::patch()` as soon as possible. For example just after the composer autoloader include:
+This is done using `Filters::patch()`. The patcher must be initialized as soon as possible for example just after the composer autoloader include:
 
 ```php
 include __DIR__ . '/../vendor/autoload.php';
@@ -123,11 +125,11 @@ use Lead\Filter\Filters;
 Filters::patch(true);
 ```
 
-Note: The patching will only work for classes loaded by the composer autoloader. So if some classes is included using `require` or `include` or has already been loaded before the `Filters::patch(true)` call, it won't be patched.
+Note: patching works for classes loaded by the composer autoloader. If a class is included using `require` or `include` or has already been loaded before the `Filters::patch(true)` call, it won't be patched.
 
-Using `Filters::patch(true)` is the no brainer way to setup the patcher but you should keep in mind that all your code as well as your vendor code will be patched. Even if patched classes are cached once patched, having filters for all methods can be time consuming.
+Using `Filters::patch(true)` is the no brainer way to setup the patcher but you should keep in mind that all your code as well as your vendor code will be patched. Even if patched classes are cached once patched, having all methods wrapped inside a filter closure can be time consuming.
 
-So the prefered approach is to only patch needed files like in the following example:
+So the prefered approach is to only patch needed files:
 
 ```php
 Filters::patch([
@@ -138,6 +140,20 @@ Filters::patch([
 ```
 
 It's therefore possible to makes your own methods filterable as well as vendor methods.
+
+It's also possible to configure the cached path like the following:
+
+```php
+Filters::patch([
+ 'City\Home',
+ 'An\Example\ClassName::foo',
+ 'A\Second\Example\ClassName' => ['foo', 'bar'],
+], [
+    'cachePath' => __DIR__ . '/../cache/jit',
+]);
+```
+
+Note: make sure apache will be able to write in your cache folder.
 
 ## API
 
@@ -158,14 +174,14 @@ Filters::patch(['City\Home']);
 ### Apply a filter to a class or an instance
 
 ```php
-$id = Filters::apply($callable, $closure);
+$id = Filters::apply($context, $method, $closure);
 ```
 
 ### Detach a filter from a class or an instance
 
 Detach all filters associated to a callable:
 ```php
-Filters::detach($callable);
+Filters::detach($context, $method);
 ```
 
 Detach a specific filter only:
