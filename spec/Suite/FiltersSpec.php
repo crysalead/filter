@@ -16,18 +16,16 @@ describe("Filters", function() {
 
     beforeEach(function() {
 
-        $this->myPrefix = function($next, $message) {
-            $message = "My {$message}";
-            return $next($message);
+        $this->filter1 = function($next, $message) {
+            return "1" . $next($message) . "1";
         };
 
-        $this->bePrefix = function($next, $message) {
-            $message = "Be {$message}";
-            return $next($message);
+        $this->filter2 = function($next, $message) {
+            return "2" . $next($message) . "2";
         };
 
         $this->noChain = function($next, $message) {
-            return "No Man's {$message}";
+            return "Hello";
         };
 
     });
@@ -46,24 +44,24 @@ describe("Filters", function() {
 
             it("applies a filter", function() {
 
-                Filters::apply($this->stub, 'filterable', $this->myPrefix);
-                expect($this->stub->filterable('World!'))->toBe('Hello My World!');
+                Filters::apply($this->stub, 'filterable', $this->filter1);
+                expect($this->stub->filterable('World!'))->toBe('1Hello World!1');
 
             });
 
             it("applies filters on each call", function() {
 
-                Filters::apply($this->stub, 'filterable', $this->myPrefix);
-                expect($this->stub->filterable('World!'))->toBe('Hello My World!');
-                expect($this->stub->filterable('World!'))->toBe('Hello My World!');
-                expect($this->stub->filterable('World!'))->toBe('Hello My World!');
+                Filters::apply($this->stub, 'filterable', $this->filter1);
+                expect($this->stub->filterable('World!'))->toBe('1Hello World!1');
+                expect($this->stub->filterable('World!'))->toBe('1Hello World!1');
+                expect($this->stub->filterable('World!'))->toBe('1Hello World!1');
 
             });
 
             it("applies a filter which break the chain", function() {
 
                 Filters::apply($this->stub, 'filterable', $this->noChain);
-                expect($this->stub->filterable('World!'))->toBe("No Man's World!");
+                expect($this->stub->filterable('World!'))->toBe("Hello");
 
             });
 
@@ -85,8 +83,8 @@ describe("Filters", function() {
 
             it("applies all filters set on a classname", function() {
 
-                Filters::apply(FilterExample::class, 'filterable', $this->myPrefix);
-                expect($this->stub->filterable('World!'))->toBe('Hello My World!');
+                Filters::apply(FilterExample::class, 'filterable', $this->filter1);
+                expect($this->stub->filterable('World!'))->toBe('1Hello World!1');
 
             });
 
@@ -96,7 +94,7 @@ describe("Filters", function() {
 
             it("detaches a filter", function() {
 
-                $id = Filters::apply($this->stub, 'filterable', $this->myPrefix);
+                $id = Filters::apply($this->stub, 'filterable', $this->filter1);
                 expect(Filters::detach($id))->toBeAnInstanceOf('Closure');
                 expect($this->stub->filterable('World!'))->toBe('Hello World!');
 
@@ -104,7 +102,7 @@ describe("Filters", function() {
 
             it("detaches all filters attached to a callable", function() {
 
-                $id = Filters::apply($this->stub, 'filterable', $this->myPrefix);
+                $id = Filters::apply($this->stub, 'filterable', $this->filter1);
                 expect(Filters::detach($this->stub, 'filterable'))->toHaveLength(1);
                 expect($this->stub->filterable('World!'))->toBe('Hello World!');
 
@@ -130,7 +128,7 @@ describe("Filters", function() {
 
             it("gets filters attached to a callable", function() {
 
-                Filters::apply($this->stub, 'filterable', $this->myPrefix);
+                Filters::apply($this->stub, 'filterable', $this->filter1);
                 $filters = Filters::filters($this->stub, 'filterable');
                 expect($filters)->toBeAn('array')->toHaveLength(1);
                 expect(reset($filters))->toBeAnInstanceOf('Closure');
@@ -143,7 +141,7 @@ describe("Filters", function() {
 
             it("disables the filter system", function() {
 
-                Filters::apply($this->stub, 'filterable', $this->myPrefix);
+                Filters::apply($this->stub, 'filterable', $this->filter1);
                 Filters::enable(false);
                 expect($this->stub->filterable('World!'))->toBe('Hello World!');
 
@@ -169,8 +167,8 @@ describe("Filters", function() {
             it("applies a filter and override a parameter", function() {
 
                 $class = $this->class;
-                Filters::apply($class, 'filterable', $this->myPrefix);
-                expect($class::filterable('World!'))->toBe('Hello My World!');
+                Filters::apply($class, 'filterable', $this->filter1);
+                expect($class::filterable('World!'))->toBe('1Hello World!1');
 
             });
 
@@ -178,7 +176,7 @@ describe("Filters", function() {
 
                 $class = $this->class;
                 Filters::apply($class, 'filterable', $this->noChain);
-                expect($class::filterable('World!'))->toBe("No Man's World!");
+                expect($class::filterable('World!'))->toBe("Hello");
 
             });
 
@@ -191,9 +189,9 @@ describe("Filters", function() {
                         return "Hello {$message}";
                     });
                 });
-                Filters::apply($class, 'filterable', $this->bePrefix);
-                Filters::apply($subclass, 'filterable', $this->myPrefix);
-                expect($subclass::filterable('World!'))->toBe('Hello Be My World!');
+                Filters::apply($class, 'filterable', $this->filter2);
+                Filters::apply($subclass, 'filterable', $this->filter1);
+                expect($subclass::filterable('World!'))->toBe('12Hello World!21');
 
             });
 
@@ -206,10 +204,10 @@ describe("Filters", function() {
                         return "Hello {$message}";
                     });
                 });
-                Filters::apply($class, 'filterable', $this->bePrefix);
-                Filters::apply($subclass, 'filterable', $this->myPrefix);
-                expect($subclass::filterable('World!'))->toBe('Hello Be My World!');
-                expect($subclass::filterable('World!'))->toBe('Hello Be My World!');
+                Filters::apply($class, 'filterable', $this->filter1);
+                Filters::apply($subclass, 'filterable', $this->filter2);
+                expect($subclass::filterable('World!'))->toBe('21Hello World!12');
+                expect($subclass::filterable('World!'))->toBe('21Hello World!12');
 
             });
 
@@ -222,12 +220,27 @@ describe("Filters", function() {
                         return "Hello {$message}";
                     });
                 });
-                Filters::apply($class, 'filterable', $this->bePrefix);
-                Filters::apply($subclass, 'filterable', $this->myPrefix);
-                expect($subclass::filterable('World!'))->toBe('Hello Be My World!');
+                Filters::apply($class, 'filterable', $this->filter1);
+                Filters::apply($subclass, 'filterable', $this->filter2);
+                expect($subclass::filterable('World!'))->toBe('21Hello World!12');
 
                 Filters::apply($subclass, 'filterable', $this->noChain);
-                expect($subclass::filterable('World!'))->toBe("No Man's My World!");
+                expect($subclass::filterable('World!'))->toBe("Hello");
+
+            });
+
+            it("applies filters in order", function() {
+
+                $class = $this->class;
+                $subclass = Stub::classname(['extends' => $class]);
+                Stub::on($subclass)->method('::filterable', function() {
+                    return Filters::run(get_called_class(), 'filterable', func_get_args(), function($next, $message) {
+                        return "Hello {$message}";
+                    });
+                });
+                Filters::apply($subclass, 'filterable', $this->filter1);
+                Filters::apply($subclass, 'filterable', $this->filter2);
+                expect($subclass::filterable('World!'))->toBe('21Hello World!12');
 
             });
 
@@ -236,7 +249,7 @@ describe("Filters", function() {
         describe("::get()", function() {
 
             it("exports filters setted as a class level", function() {
-                Filters::apply($this->class, 'filterable', $this->myPrefix);
+                Filters::apply($this->class, 'filterable', $this->filter1);
                 $filters = Filters::get();
                 expect($filters)->toHaveLength(1);
                 expect(isset($filters[$this->class . '::filterable']))->toBe(true);
@@ -247,7 +260,7 @@ describe("Filters", function() {
         describe("::set()", function() {
 
             it("imports class based filters", function() {
-                Filters::set([$this->class . '::filterable' => [$this->myPrefix]]);
+                Filters::set([$this->class . '::filterable' => [$this->filter1]]);
                 $filters = Filters::get();
                 expect($filters)->toHaveLength(1);
                 expect(isset($filters[$this->class . '::filterable']))->toBe(true);
@@ -260,7 +273,7 @@ describe("Filters", function() {
 
         it("throws an Exception when trying to apply a filter on an invalid callable string", function() {
 
-            $closure = function() { Filters::apply(null, 'filterable', $this->myPrefix); };
+            $closure = function() { Filters::apply(null, 'filterable', $this->filter1); };
             expect($closure)->toThrow(new InvalidArgumentException("The provided callable is invalid."));
 
         });

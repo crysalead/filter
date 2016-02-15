@@ -75,7 +75,11 @@ class Filters
         $filter = $filter->bindTo($instance, $class);
 
         $ref = static::_ref($context, $method);
-        static::$_filters[$ref][] = $filter;
+        if (!isset(static::$_filters[$ref])) {
+            static::$_filters[$ref] = [$filter];
+        } else {
+            array_unshift(static::$_filters[$ref], $filter);
+        }
         return $ref . '|' . (count(static::$_filters[$ref]) - 1);
     }
 
@@ -193,7 +197,7 @@ class Filters
     public static function run($context, $method, $params, $callback, $filters = [])
     {
         if (static::$_enabled) {
-            $filters = array_merge(static::filters($context, $method), $filters);
+            $filters = array_merge($filters, static::filters($context, $method));
         }
         $filters[] = $callback;
         $generator = static::_generator($filters);
