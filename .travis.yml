@@ -1,20 +1,21 @@
-sudo: false
+sudo: required
+dist: xenial
+group: edge
 language: php
 
 php:
   - 5.5
   - 5.6
   - 7.0
-
-matrix:
-  allow_failures:
-    - php: hhvm
-  fast_finish: true
+  - 7.1
+  - hhvm
 
 before_script:
-  - composer config -g github-oauth.github.com $GITHUB_COMPOSER_AUTH
-  - composer install
+  - if [[ $TRAVIS_SECURE_ENV_VARS = "true" ]]; then composer config -g github-oauth.github.com $GITHUB_COMPOSER_AUTH; fi
+  - composer install --no-interaction
   - if [[ $TRAVIS_PHP_VERSION =~ ^hhvm ]]; then echo 'xdebug.enable = On' >> /etc/hhvm/php.ini; fi
+  - if [[ $TRAVIS_PHP_VERSION =~ ^hhvm ]]; then echo 'hhvm.php7.all = 1' >> /etc/hhvm/php.ini; fi
+  - if [[ $TRAVIS_PHP_VERSION =~ ^7 ]]; then git clone git://github.com/xdebug/xdebug.git && cd xdebug && phpize && ./configure --enable-xdebug  && make && make install && echo "zend_extension = xdebug.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini && cd ..; fi
 
 script: bin/kahlan --coverage=3 --clover=clover.xml
 
@@ -24,4 +25,4 @@ after_success:
 
 env:
   global:
-    secure: A1WFTMcueEyR+2guEIeNDcDDR5FsPx9KJ4Qaq+A1veLH4jwRYj9tSjeiH1KA+L0Xo4n7ffpLGKOymiObkqKFP4jjGvVGzJlMeA1de1rUfDmymIuqGewytGIGYxsDSpvdMpTOblzS5gw86PwIDYLCA3Lwnz8Wmd02kCnMsiE4xq0=
+    - secure: A1WFTMcueEyR+2guEIeNDcDDR5FsPx9KJ4Qaq+A1veLH4jwRYj9tSjeiH1KA+L0Xo4n7ffpLGKOymiObkqKFP4jjGvVGzJlMeA1de1rUfDmymIuqGewytGIGYxsDSpvdMpTOblzS5gw86PwIDYLCA3Lwnz8Wmd02kCnMsiE4xq0=

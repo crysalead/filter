@@ -13,7 +13,7 @@
         "crysalead/jit": "~2.1"
     },
     "require-dev": {
-        "crysalead/kahlan": "~2.1"
+        "kahlan/kahlan": "~3.0"
     },
     "autoload": {
         "psr-4": {

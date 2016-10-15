@@ -6,7 +6,7 @@ use InvalidArgumentException;
 use Lead\Filter\Filters;
 
 use Kahlan\Jit\Interceptor;
-use Kahlan\Plugin\Stub;
+use Kahlan\Plugin\Double;
 use Lead\Filter\Spec\Fixture\Jit\Patcher\Parrot;
 use Lead\Filter\Spec\Fixture\Jit\Patcher\Parrot2;
 use Lead\Filter\Spec\Fixture\Jit\Patcher\Parrot3;
@@ -67,7 +67,7 @@ describe("Filters", function() {
 
             it("applies a custom filter", function() {
 
-                Stub::on($this->stub)->method('filterable', function() {
+                allow($this->stub)->toReceive('filterable')->andRun(function() {
                     $closure = function($next, $message) {
                         return "Hello {$message}";
                     };
@@ -154,8 +154,8 @@ describe("Filters", function() {
     context("with a class context", function() {
 
         beforeEach(function() {
-            $this->class = Stub::classname();
-            Stub::on($this->class)->method('::filterable', function() {
+            $this->class = Double::classname();
+            allow($this->class)->toReceive('::filterable')->andRun(function() {
                 return Filters::run(get_called_class(), 'filterable', func_get_args(), function($next, $message) {
                     return "Hello {$message}";
                 });
@@ -183,8 +183,8 @@ describe("Filters", function() {
             it("applies parent classes's filters", function() {
 
                 $class = $this->class;
-                $subclass = Stub::classname(['extends' => $class]);
-                Stub::on($subclass)->method('::filterable', function() {
+                $subclass = Double::classname(['extends' => $class]);
+                allow($subclass)->toReceive('::filterable')->andRun(function() {
                     return Filters::run(get_called_class(), 'filterable', func_get_args(), function($next, $message) {
                         return "Hello {$message}";
                     });
@@ -198,8 +198,8 @@ describe("Filters", function() {
             it("applies parent classes's filters using cached filters", function() {
 
                 $class = $this->class;
-                $subclass = Stub::classname(['extends' => $class]);
-                Stub::on($subclass)->method('::filterable', function() {
+                $subclass = Double::classname(['extends' => $class]);
+                allow($subclass)->toReceive('::filterable')->andRun(function() {
                     return Filters::run(get_called_class(), 'filterable', func_get_args(), function($next, $message) {
                         return "Hello {$message}";
                     });
@@ -214,8 +214,8 @@ describe("Filters", function() {
             it("invalidates parent cached filters", function() {
 
                 $class = $this->class;
-                $subclass = Stub::classname(['extends' => $class]);
-                Stub::on($subclass)->method('::filterable', function() {
+                $subclass = Double::classname(['extends' => $class]);
+                allow($subclass)->toReceive('::filterable')->andRun(function() {
                     return Filters::run(get_called_class(), 'filterable', func_get_args(), function($next, $message) {
                         return "Hello {$message}";
                     });
@@ -232,8 +232,8 @@ describe("Filters", function() {
             it("applies filters in order", function() {
 
                 $class = $this->class;
-                $subclass = Stub::classname(['extends' => $class]);
-                Stub::on($subclass)->method('::filterable', function() {
+                $subclass = Double::classname(['extends' => $class]);
+                allow($subclass)->toReceive('::filterable')->andRun(function() {
                     return Filters::run(get_called_class(), 'filterable', func_get_args(), function($next, $message) {
                         return "Hello {$message}";
                     });
@@ -392,7 +392,7 @@ describe("Filters", function() {
 
         it("bails out when the filter JIT patcher is not enabled", function() {
 
-            Filters::unpatch();
+            expect(Filters::unpatch())->toBe(true);
 
         });
 
