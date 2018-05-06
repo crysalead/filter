@@ -5,7 +5,7 @@ use Exception;
 use InvalidArgumentException;
 use Lead\Filter\Filters;
 
-use Kahlan\Jit\Interceptor;
+use Kahlan\Jit\ClassLoader;
 use Kahlan\Plugin\Double;
 use Lead\Filter\Spec\Fixture\Jit\Patcher\Parrot;
 use Lead\Filter\Spec\Fixture\Jit\Patcher\Parrot2;
@@ -115,7 +115,7 @@ describe("Filters", function() {
 
             });
 
-            it("throws an Exception when trying to detach an unexisting filter id", function() {
+            it("throws an Exception when trying to detach an unexisting filter reference id", function() {
 
                 $closure = function() { Filters::detach('foo\Bar#0000000046feb0630000000176a1b630::baz'); };
                 expect($closure)->toThrow(new Exception("Unexisting `'foo\\Bar#0000000046feb0630000000176a1b630::baz'` filter reference id."));
@@ -307,10 +307,6 @@ describe("Filters", function() {
 
         it("enables/disables the filter JIT patching by patching an autodetected composer autoloader", function() {
 
-            $previous = Interceptor::instance();
-
-            Interceptor::unpatch();
-
             expect(class_exists(Parrot2::class, false))->toBe(false);
 
             $interceptor = Filters::patch([
@@ -330,21 +326,15 @@ describe("Filters", function() {
             Filters::unpatch();
             expect($patchers->exists('filter'))->toBe(false);
 
-            Interceptor::load($previous);
-
         });
 
         it("enables/disables the filter JIT patching by using composer compatible autoloader", function() {
-
-            $previous = Interceptor::instance();
-
-            Interceptor::unpatch();
 
             expect(class_exists(Parrot3::class, false))->toBe(false);
 
             $interceptor = Filters::patch([
                 Parrot3::class
-            ], ['loader' => Interceptor::composer()]);
+            ], ['loader' => ClassLoader::instance()]);
 
             Filters::apply(Parrot3::class, 'tell', function($next, $message) {
                 return $next("HeHe! {$message}");
@@ -358,8 +348,6 @@ describe("Filters", function() {
 
             Filters::unpatch();
             expect($patchers->exists('filter'))->toBe(false);
-
-            Interceptor::load($previous);
 
         });
 
